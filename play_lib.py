@@ -16,6 +16,7 @@ play.set_backdrop('light blue')
 blocks = []
 dt = 60 / 1000
 
+
 class Car(play.Box):
     def __init__(self, color, x, y, width, height):
         super().__init__(color=color, x=x, y=y, width=width, height=height)
@@ -37,21 +38,21 @@ class Car(play.Box):
         self.steering = 0.0
 
     def update(self):
-
-        ###
-        self.physics.x_speed += self.acceleration
-        # self.velocity += (self.acceleration, 0)
+        self.physics.x_speed += (self.acceleration * dt)
         self.physics.x_speed = max(-self.max_velocity, min(self.physics.x_speed, self.max_velocity))
         if self.steering:
             turning_radius = self.length / sin(radians(self.steering))
             angular_velocity = self.physics.x_speed / turning_radius
         else:
             angular_velocity = 0
-        self.x += cos(-self.angle) * self.physics.x_speed - sin(-self.angle) * self.physics.y_speed
-        self.y += sin(-self.angle) * self.physics.x_speed + cos(-self.angle) * self.physics.y_speed
-        # self.position += self.velocity.rotate(-self.angle)
+        # self.x += cos(-self.angle) * self.physics.x_speed - sin(-self.angle) * self.physics.y_speed * dt
+        # self.y += sin(-self.angle) * self.physics.x_speed + cos(-self.angle) * self.physics.y_speed * dt
         self.angle += degrees(angular_velocity)
-        # self.turn(self.angle)
+        # self.steering = max(-platform.max_steering, min(platform.steering, platform.max_steering))
+        self.turn(self.angle)
+        ##
+        # self.position += self.velocity.rotate(-self.angle)
+
         # self.rect = self.rotated.get_rect()
         # self.rect.x, self.rect.y = self.position.x * 32 - self.rect.width / 2, self.position.y * 32 - self.rect.height / 2
         # self.screen.blit(self.rotated, self.position * 32 - (self.rect.width / 2, self.rect.height / 2))
@@ -119,38 +120,64 @@ def game():
     #     platform.physics.x_speed = 0
     #     platform.physics.y_speed = 0
 
-    pressed = pygame.key.get_pressed()
-
-    if pressed[pygame.K_UP]:
+    if play.key_is_pressed('w'):
         if platform.physics.x_speed < 0:
             platform.acceleration = platform.brake_deceleration
         else:
-            platform.acceleration += 100 * dt
-    elif pressed[pygame.K_DOWN]:
+            platform.acceleration += 30 * dt
+    elif play.key_is_pressed('s'):
         if platform.physics.x_speed > 0:
             platform.acceleration = -platform.brake_deceleration
         else:
-            platform.acceleration -= 100 * dt
-    elif pressed[pygame.K_SPACE]:
-        if abs(platform.physics.x_speed) > dt * platform.brake_deceleration:
-            platform.acceleration = -copysign(platform.brake_deceleration, platform.physics.x_speed)
-        else:
-            platform.acceleration = -platform.physics.x_speed / dt
+            platform.acceleration -= 30 * dt
     else:
         if abs(platform.physics.x_speed) > dt * platform.free_deceleration:
             platform.acceleration = -copysign(platform.free_deceleration, platform.physics.x_speed)
         else:
             if dt != 0:
                 platform.acceleration = -platform.physics.x_speed / dt
-    platform.acceleration = max(-platform.max_acceleration, min(platform.acceleration, platform.max_acceleration))
 
-    if pressed[pygame.K_RIGHT]:
-        platform.steering -= 80 * dt
-    elif pressed[pygame.K_LEFT]:
-        platform.steering += 80 * dt
+    if play.key_is_pressed('a'):
+        platform.steering -= 30 * dt
+    elif play.key_is_pressed('d'):
+        platform.steering += 30 * dt
     else:
         platform.steering = 0
-    platform.steering = max(-platform.max_steering, min(platform.steering, platform.max_steering))
+
+
+
+    # pressed = pygame.key.get_pressed()
+
+    # if pressed[pygame.K_UP]:
+    #     if platform.physics.x_speed < 0:
+    #         platform.acceleration = platform.brake_deceleration
+    #     else:
+    #         platform.acceleration += 100 * dt
+    # elif pressed[pygame.K_DOWN]:
+    #     if platform.physics.x_speed > 0:
+    #         platform.acceleration = -platform.brake_deceleration
+    #     else:
+    #         platform.acceleration -= 100 * dt
+    # elif pressed[pygame.K_SPACE]:
+    #     if abs(platform.physics.x_speed) > dt * platform.brake_deceleration:
+    #         platform.acceleration = -copysign(platform.brake_deceleration, platform.physics.x_speed)
+    #     else:
+    #         platform.acceleration = -platform.physics.x_speed / dt
+    # else:
+    #     if abs(platform.physics.x_speed) > dt * platform.free_deceleration:
+    #         platform.acceleration = -copysign(platform.free_deceleration, platform.physics.x_speed)
+    #     else:
+    #         if dt != 0:
+    #             platform.acceleration = -platform.physics.x_speed / dt
+    # platform.acceleration = max(-platform.max_acceleration, min(platform.acceleration, platform.max_acceleration))
+    #
+    # if pressed[pygame.K_RIGHT]:
+    #     platform.steering -= 80 * dt
+    # elif pressed[pygame.K_LEFT]:
+    #     platform.steering += 80 * dt
+    # else:
+    #     platform.steering = 0
+    # platform.steering = max(-platform.max_steering, min(platform.steering, platform.max_steering))
 
 
     platform.update()
