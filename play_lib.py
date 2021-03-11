@@ -28,7 +28,7 @@ class Car(play.Box):
         # self.position = Vector2(self.x, self.y)
         # self.velocity = Vector2(0.0, 0.0)
         self.angle = 0
-        self.length = width
+        # self.length = width
         self.max_acceleration = 30
         self.max_steering = 50
         self.max_velocity = 20
@@ -38,18 +38,22 @@ class Car(play.Box):
         self.steering = 0.0
 
     def update(self):
-        self.physics.x_speed += (self.acceleration * dt)
+        Vector2.(self.physics.x_speed, self.physics.y_speed) += Vector2(self.acceleration * dt, 0)
         self.physics.x_speed = max(-self.max_velocity, min(self.physics.x_speed, self.max_velocity))
+        # self.
         if self.steering:
-            turning_radius = self.length / sin(radians(self.steering))
+            turning_radius = self.width / sin(radians(self.steering))
             angular_velocity = self.physics.x_speed / turning_radius
         else:
             angular_velocity = 0
-        # self.x += cos(-self.angle) * self.physics.x_speed - sin(-self.angle) * self.physics.y_speed * dt
-        # self.y += sin(-self.angle) * self.physics.x_speed + cos(-self.angle) * self.physics.y_speed * dt
-        self.angle += degrees(angular_velocity)
-        # self.steering = max(-platform.max_steering, min(platform.steering, platform.max_steering))
-        self.turn(self.angle)
+        angle = degrees(angular_velocity) * dt
+        self.physics.x_speed, self.physics.y_speed = Vector2(self.physics.x_speed, self.physics.y_speed).rotate(angle)
+        # self.x += (cos(-angle) * self.physics.x_speed - sin(-angle) * self.physics.y_speed) * dt
+        # self.y += (sin(-angle) * self.physics.x_speed + cos(-angle) * self.physics.y_speed) * dt
+        self.angle += angle
+        # self.turn(angle)
+        self.steering = max(-platform.max_steering, min(platform.steering, platform.max_steering))
+        # self.turn(self.angle)
         ##
         # self.position += self.velocity.rotate(-self.angle)
 
@@ -79,16 +83,6 @@ class Radar(line):
             line.physics.y_speed = y_speed
 
 
-
-# class Robot(Car, Radar):
-#     def __init__(self, color, x, y, width, height, angle_car, angle_line):
-#         super(Car).__init__(color='green')
-#         # super(Radar).__init__()
-#         # super(Radar).__init__(x, y, angle=angle_line)
-#         # self.car = Car(color, y, width, height, angle_car)(
-#         # self.radar = Radar(x, y, angle_line)
-
-
 platform = Car(color='brown', x=100, y=-250, width=150, height=55)
 # platform2 = Car(color='brown', y=-250, width=150, height=15)
 # line1 = play.new_line(length=200, x=10, y=15, angle=45, thickness=10
@@ -99,7 +93,7 @@ platform = Car(color='brown', x=100, y=-250, width=150, height=55)
 @play.when_program_starts
 def start():
     platform.start_physics(
-        stable=True, obeys_gravity=False, bounciness=1, mass=1
+        can_move=True, stable=True, obeys_gravity=False
     )
     platform.show()
 
@@ -137,9 +131,9 @@ def game():
             if dt != 0:
                 platform.acceleration = -platform.physics.x_speed / dt
 
-    if play.key_is_pressed('a'):
+    if play.key_is_pressed('d'):
         platform.steering -= 30 * dt
-    elif play.key_is_pressed('d'):
+    elif play.key_is_pressed('a'):
         platform.steering += 30 * dt
     else:
         platform.steering = 0
